@@ -2,5 +2,4 @@
 
 Welcome!
 
-This is the repository for software to solve a Rubik's cube using different methods. 
-Implement your own as you see fit.
+This is the template repository for software to solve a Rubik's cube using different methods for the Cubexell Robotics Camp. Some code has been removed for you to fill in .

@@ -6,7 +6,7 @@ import java.util.Arrays;
 import static org.cubexell.cubesolver.core.CubeConstants.*;
 
 public class Cube {
-    public char[][][] cubeColors = null;
+    public char[][][] cubeColors;
     public transient char[][][] cubeColorsCopy = new char[6][3][3];
     public transient char[][] rotatingGrid = new char[3][3];
 

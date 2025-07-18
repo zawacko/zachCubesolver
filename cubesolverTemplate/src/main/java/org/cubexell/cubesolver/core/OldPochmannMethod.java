@@ -279,6 +279,9 @@ public class OldPochmannMethod
             unsolvedCorners.add(corner);
     }
 
+
+
+
     private HashSet<String> createUnsolvedCorners() {
         HashSet<String> unsolvedCorners = new HashSet<>(22);
         addUnsolvedCorner(unsolvedCorners, "WRB");

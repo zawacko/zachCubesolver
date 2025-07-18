@@ -1,2 +1,2 @@
-include ':cubesolver'
+include ':cubesolverTemplate'
 rootProject.name = 'cubesolver'

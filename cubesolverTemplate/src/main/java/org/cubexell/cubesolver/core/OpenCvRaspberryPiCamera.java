@@ -1,18 +1,10 @@
 package org.cubexell.cubesolver.core;
 
 // For core classes like Mat, Scalar, and Size:
-import org.bytedeco.javacpp.FloatPointer;
-import org.bytedeco.javacpp.indexer.FloatRawIndexer;
 import org.bytedeco.javacpp.indexer.UByteIndexer;
 import org.bytedeco.opencv.opencv_core.*;
-import org.opencv.core.CvType;
-import org.opencv.imgproc.Imgproc;
 
 import static org.bytedeco.opencv.global.opencv_imgproc.cvtColor;
-import static org.bytedeco.opencv.global.opencv_imgproc.GaussianBlur;
-import static org.bytedeco.opencv.global.opencv_core.countNonZero;
-import static org.bytedeco.opencv.global.opencv_imgproc.COLOR_BGR2HSV;
-import static org.bytedeco.opencv.global.opencv_core.inRange;
 
 // For global functions in image processing and reading images, use static imports:
 import static org.bytedeco.opencv.global.opencv_imgcodecs.imread;
@@ -20,9 +12,7 @@ import static org.bytedeco.opencv.global.opencv_imgcodecs.imwrite;  // if you wr
 import static org.bytedeco.opencv.global.opencv_imgproc.*;           // for image processing functions
 
 // For other global core functions (if needed):
-import static org.bytedeco.opencv.global.opencv_core.*;
 import static org.cubexell.cubesolver.core.CubeConstants.*;
-import static org.cubexell.cubesolver.core.CubeConstants.SEE_OPPOSITE_FACE_UP;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
@@ -34,13 +24,13 @@ import java.util.*;
 import java.util.Arrays;
 
 public class OpenCvRaspberryPiCamera implements CubeColorInspector{
-    int imageWidth = 3280;
-    int imageHeight = 2464;
+    int imageWidth = 3280;//default image width
+    int imageHeight = 2464;//default image height
     public static int colorSquare = 0;
 
     Robot robot;
 
-    String outputImage = "cubeColors.jpg";
+    String outputImage = "cubeColors.jpg";//this will be the name of the image of the cube that is saved to the RaspberryPi
 
     public OpenCvRaspberryPiCamera(Robot robot) {
         this.robot = robot;
@@ -57,10 +47,10 @@ public class OpenCvRaspberryPiCamera implements CubeColorInspector{
     public char[][][] inspect() {
         captureImage();
 
-        char[][][] cubeColors = new char[6][3][3];
+        char[][][] cubeColors = new char[6][3][3];//creates a blank matrix of the cube
 
-        System.out.println("Back Face");
-        char[][] backFace = inspectBackFace('B');
+        System.out.println("Back Face");//tells which face the following colors are for
+        char[][] backFace = inspectBackFace('B');//the 'B' is the center color, and it gets the colors of the rest of the pieces on the back face
         System.out.println();
 
         System.out.println("Left Face");
@@ -72,11 +62,11 @@ public class OpenCvRaspberryPiCamera implements CubeColorInspector{
         System.out.println();
 
 
-        robot.executeMoves(SEE_OPPOSITE_FACE_FRONT);
-        outputImage = "cubeColorsF.jpg";
+        robot.executeMoves(SEE_OPPOSITE_FACE_FRONT);//turns the cube so that the front face is on the back side of the cube, and therefore the camera can see the front face
+        outputImage = "cubeColorsF.jpg";// new name for the new picture
         captureImage();
         char[][] frontFace = inspectBackFace('G');
-        robot.executeMoves(SEE_OPPOSITE_FACE_FRONT);
+        robot.executeMoves(SEE_OPPOSITE_FACE_FRONT);//returns the cube to solved state
 
         robot.executeMoves(SEE_OPPOSITE_FACE_RIGHT);
         outputImage = "cubeColorsR.jpg";
@@ -90,7 +80,7 @@ public class OpenCvRaspberryPiCamera implements CubeColorInspector{
         char[][] upFace = inspectDownFace('W');
         robot.executeMoves(SEE_OPPOSITE_FACE_UP);
 
-        cubeColors[BACK_FACE_INDEX] = backFace;
+        cubeColors[BACK_FACE_INDEX] = backFace;//sets the cubeColors matrix to the colors that the camera saw
         cubeColors[LEFT_FACE_INDEX] = leftFace;
         cubeColors[DOWN_FACE_INDEX] = downFace;
         cubeColors[FRONT_FACE_INDEX] = frontFace;
@@ -102,9 +92,9 @@ public class OpenCvRaspberryPiCamera implements CubeColorInspector{
     }
 
     public char[][] inspectBackFace(char center) {
-        return new char[][]{
+        return new char[][]{//returns a 2 dimensional array of the colors of the back face
                 {
-                        findColor(1000,585,90,85),
+                        findColor(1000,585,90,85),//gets the color of the top-left piece of the back face. coordinates are of the top-left corner, width, and height.
                         findColor(1160,470,240,90),
                         findColor(1490,140,290,90),
                 },
@@ -163,365 +153,105 @@ public class OpenCvRaspberryPiCamera implements CubeColorInspector{
 
     public void captureImage() {
         try {
-            ProcessBuilder processBuilder = new ProcessBuilder("libcamera-jpeg", "-o", outputImage, "--width", Integer.toString(imageWidth), "--height", Integer.toString(imageHeight), "--timeout", "1000");
+            ProcessBuilder processBuilder = new ProcessBuilder("libcamera-jpeg", "-o", outputImage, "--width", Integer.toString(imageWidth), "--height", Integer.toString(imageHeight), "--timeout", "1000");//this is basically running a command in terminal that takes a picture with these peramiters.
 
             Process process = processBuilder.start();
 
             int exitCode = process.waitFor();
 
-            if (exitCode == 0) {
+            if (exitCode == 0) {//makes sure it was able to take the picture
                 System.out.println("Image captured successfully: " + outputImage);
             } else {
                 System.out.println("Error capturing image, exit code: " + exitCode);
             }
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            e.printStackTrace();//stops program if error occurs and shows where it happened
         }
     }
 
-    public char findColor(int squareX, int squareY, int squareWidth, int squareHeight) {
-        Mat image = imread(outputImage);
-        
-        Mat square = new Mat(image, new Rect(squareX, squareY, squareWidth, squareHeight));
- 
-        char color = classifyColor(square);
-        
-        drawSquare(squareX,squareY,squareWidth,squareHeight);
+    public char findColor(int squareX, int squareY, int squareWidth, int squareHeight) {//the peramiters are the x and y coordinates of the top-left corner, width, and height of the rectangle. (0,0) is the top-left corner of the entire image.
+        Mat image = imread(outputImage);//turns the image into a "Mat" so that opencv can proccess it
+
+        Mat square = new Mat(image, new Rect(squareX, squareY, squareWidth, squareHeight));//creates a new mat of just the rectangle
+
+        char color = classifyColor(square);//gets the color of that rectangle
+
+        drawSquare(squareX,squareY,squareWidth,squareHeight);//draws the rectangle in the image so that we can look at it and tune it's position
 
         return color;
     }
 
     public static char classifyColor(Mat square) {
-        // Convert the square to HSV color space
-        Mat hsvSquare = new Mat();
-        cvtColor(square, hsvSquare, COLOR_BGR2HSV);
-        Mat labSquare = new Mat();
-        cvtColor(square, labSquare, COLOR_BGR2Lab);
 
-        // Define color ranges for classification
-        List<Scalar[]> colorRanges = new ArrayList<>();
-        colorRanges.add(new Scalar[]{new Scalar(0, 50, 30, 0), new Scalar(40, 255, 255, 0)}); // Red
-        colorRanges.add(new Scalar[]{new Scalar(0, 80, 80, 0), new Scalar(50, 255, 255, 0)}); // Orange
-        colorRanges.add(new Scalar[]{new Scalar(15, 80, 80, 0), new Scalar(60, 255, 255, 0)}); // Yellow
-        colorRanges.add(new Scalar[]{new Scalar(25, 80, 80, 0), new Scalar(100, 255, 255, 0)}); // Green
-        colorRanges.add(new Scalar[]{new Scalar(60, 80, 80, 0), new Scalar(150, 255, 255, 0)}); // Blue
-        colorRanges.add(new Scalar[]{new Scalar(0, 0, 200, 0), new Scalar(180, 30, 255, 0)}); // White
+        Mat labSquare = new Mat();//initializes a mat
+        cvtColor(square, labSquare, COLOR_BGR2Lab);//converts the original square from BGR to LAB colorspace and saves it to labSquare
 
-        Mat equalizedSquare = equalizeLighting(hsvSquare);
-
-        // Apply Gaussian blur to reduce glare and noise
-        //equalizedSquare.convertTo(equalizedSquare, CvType.CV_32F);
-        Mat blurredSquare = new Mat();
-        GaussianBlur(equalizedSquare, blurredSquare, new Size(5, 5), 0);
-
-        //Mat labEqualizedSquare = equalizeLighting(labSquare);
-
-        // Apply Gaussian blur to reduce glare and noise
-        //labEqualizedSquare.convertTo(labEqualizedSquare, CvType.CV_32F);
-//        Mat labBlurredSquare = new Mat();
-//        GaussianBlur(labSquare, labBlurredSquare, new Size(5, 5), 0);
-        Mat labBlurredSquare = labSquare;
-
-        //Mat bgrEqualizedSquare = equalizeLighting(square);
-        Mat bgrBlurredSquare = new Mat();
-        GaussianBlur(square, bgrBlurredSquare, new Size(5, 5), 0);
-        
-        int red=0, orange=0, white=0, yellow=0, green=0, blue=0;
-
-        float hue = 0, saturation = 0, value = 0;
-        int pixelCounter = 0;
-        UByteIndexer hsvIndexer = blurredSquare.createIndexer();
-        for (int row = 0; row < blurredSquare.rows(); row++) {
-            for (int col = 0; col < blurredSquare.cols(); col++) {
-                //FloatPointer fp = new FloatPointer(blurredSquare.ptr(row, col));
-                hue += hsvIndexer.get(row, col, 0);
-                saturation += hsvIndexer.get(row, col, 1);
-                value += hsvIndexer.get(row, col, 2);
-
-//                hue += fp.get(0);
-//                saturation += fp.get(1);
-//                value += fp.get(2);
-
-                //char pixelColor = classifyColorHSV(fp.get(0), fp.get(1), fp.get(2));
-                char pixelColor = 'R';
-
-                switch (pixelColor) {
-                    case 'R': red++; break;
-                    case 'O': orange++; break;
-                    case 'W': white++; break;
-                    case 'Y': yellow++; break;
-                    case 'G': green++; break;
-                    case 'B': blue++; break;
-                    }
-
-                pixelCounter++;
-
-            }
-
-        }
-
-        float avgHue = hue/pixelCounter;
-        float avgSaturation = saturation/pixelCounter;
-        float avgValue = value/pixelCounter;
-
-        System.out.println("hue: " + avgHue + " saturation: " + avgSaturation + " value: " + avgValue);
-
-//        char dominantColor = findDominantColor(red, orange, white, yellow, green, blue);
-//        System.out.println("red = "+red + " orange = "+orange + " white = "+white + " yellow = "+yellow + " green = "+green + "blue = "+blue);
-//        System.out.println(dominantColor);
-//        return dominantColor;
-
-//        Mat normalizedSquare = new Mat();
-//        blurredSquare.convertTo(normalizedSquare, CV_32FC3, 1.0/255.0, 0);
-
-//        Mat bgrSquare = new Mat();
-//        cvtColor(normalizedSquare, bgrSquare, COLOR_HSV2BGR);
-//        Mat finalLabSquare = new Mat();
-//        cvtColor(bgrSquare, finalLabSquare, COLOR_BGR2Lab);
-
-
-        List<Integer> listOfL = new ArrayList<>();
+        List<Integer> listOfL = new ArrayList<>();//initializeds a list that will hold all of the l values of the pixles
         List<Integer> listOfA = new ArrayList<>();
         List<Integer> listOfB = new ArrayList<>();
 
-        UByteIndexer indexer = labBlurredSquare.createIndexer();
-        float l = 0, a = 0, b = 0;
-        int labPixelCounter = 0;
-        int labRed=0, labOrange=0, labWhite=0, labYellow=0, labGreen=0, labBlue=0;
-        for (int row = 0; row < labBlurredSquare.rows(); row++) {
-            for (int col = 0; col < labBlurredSquare.cols(); col++) {
-                int pixelL = indexer.get(row, col, 0);
-                int pixelA = indexer.get(row, col, 1);
-                int pixelB = indexer.get(row, col, 2);
-                l += pixelL;
-                a += pixelA;
-                b += pixelB;
+        UByteIndexer indexer = labSquare.createIndexer();//creates an indexer that allows us to access the lab values of each pixel
 
-                char pixelColor = classifyColorDeltaELab(pixelL, pixelA, pixelB);
+        for () {//TODO use the for loop to go through every row
+            for () {//TODO use a for loop to go through every column
+                int pixelL = indexer.get();//TODO get the L value of that pixel by putting row, col, and 0 because L is the first value
+                int pixelA = indexer.get();//TODO A is second value, so 1
+                int pixelB = indexer.get();//TODO B is 2
 
-                switch (pixelColor) {
-                    case 'R': labRed++; break;
-                    case 'O': labOrange++; break;
-                    case 'W': labWhite++; break;
-                    case 'Y': labYellow++; break;
-                    case 'G': labGreen++; break;
-                    case 'B': labBlue++; break;
-                }
-
-                labPixelCounter++;
-
-                listOfL.add(pixelL);
-                listOfA.add(pixelA);
-                listOfB.add(pixelB);
+                listOfL.add();//TODO add the value to the list
+                listOfA.add(pixelA);//TODO A value
+                listOfB.add(pixelB);//TODO B value
 
             }
 
         }
 
-        int medianL = getListMedian(listOfL);
-        int medianA = getListMedian(listOfA);
-        int medianB = getListMedian(listOfB);
+        int medianL;//TODO get the median L value
+        int medianA;//TODO A value
+        int medianB;//TODO B value
 
-        System.out.println("Median values: L: " + medianL + " A: " + medianA + " B: " + medianB);
+        System.out.println("Median values: L: " + medianL + " A: " + medianA + " B: " + medianB);//prints out the final median values for tuning
 
-        char medianLabColor = classifyColorDeltaELab(medianL, medianA, medianB);
+        char medianLabColor;//TODO figure out what color the square is given the median lab values
 
-        System.out.println("Median color is: " + medianLabColor);
+        System.out.println("Median color is: " + medianLabColor);//prints out the color
         System.out.println();
 
-        float avgL = l/labPixelCounter;
-        float avgA = a/labPixelCounter;
-        float avgB = b/labPixelCounter;
-
-        System.out.println("L: "+avgL+" A: "+avgA+" B: "+avgB);
-
-        char labDominantColor = findDominantColor(labRed, labOrange, labWhite, labYellow, labGreen, labBlue);
-        System.out.println("red = "+labRed + " orange = "+labOrange + " white = "+labWhite + " yellow = "+labYellow + " green = "+labGreen + "blue = "+labBlue);
-        System.out.println(labDominantColor);
-        //return labDominantColor;
-
-        Mat labSavingSquare = new Mat();
-        cvtColor(square, labSavingSquare, COLOR_BGR2Lab);
-        Mat savingSquare = new Mat();
-
-        cvtColor(labSavingSquare, savingSquare, COLOR_Lab2BGR);
-
-        imwrite("/home/amahl/cubesolver/cubesolver/square" + colorSquare + ".jpg", savingSquare);
+        imwrite("/home/amahl/cubesolver/cubesolver/square" + colorSquare + ".jpg", square);//saves the square for tuning
         colorSquare ++;
 
-        return medianLabColor;
-//
-//        char avgColor = classifyColorHSV(avgHue, avgSaturation, avgValue);
-//        return avgColor;
+        return medianLabColor;//returns the final color
 
-        // Classify based on color ranges
-//        for (int i = 0; i < colorRanges.size(); i++) {
-//            Scalar lower = colorRanges.get(i)[0];
-//            Scalar upper = colorRanges.get(i)[1];
-//
-//            // Create a mask for the color range
-//            Mat mask = new Mat();
-//            // Create 1x1 Mats for lower and upper bounds
-//            Mat lowerMat = new Mat(1, 1, blurredSquare.type(), lower);
-//            Mat upperMat = new Mat(1, 1, blurredSquare.type(), upper);
-//            inRange(blurredSquare, lowerMat, upperMat, mask);
-//
-//            // Count the number of non-zero pixels in the mask
-//            int nonZeroCount = (int) countNonZero(mask);
-//            double totalPixels = square.total();
-//            System.out.print(" " + (nonZeroCount/totalPixels));
-//
-//            // If a significant portion of the square matches the color range, classify it as that color
-//            if (nonZeroCount > totalPixels * 0.001) {  // Threshold to match color (adjust as needed)
-//                switch (i) {
-//                    case 0:
-//                        System.out.println();
-//                        return 'R';
-//                    case 1:
-//                        System.out.println();
-//                        return 'O';
-//                    case 2:
-//                        System.out.println();
-//                        return 'Y';
-//                    case 3:
-//                        System.out.println();
-//                        return 'G';
-//                    case 4:
-//                        System.out.println();
-//                        return 'B';
-//                    case 5:
-//                        System.out.println();
-//                        return 'W';
-//                    default:
-//                        System.out.println();
-//                        return 'U';
-//                }
-//            }
-//        }
-//        System.out.println();
-//        return 'U';  // If no color is detected
-    }
-    public static Mat equalizeLighting(Mat hsvImage) {
-        // Split the HSV image into its channels
-        MatVector hsvChannels = new MatVector();
-        split(hsvImage, hsvChannels);
-
-        // Apply histogram equalization on the V (Value) channel
-        Mat vChannel = hsvChannels.get(2);
-        equalizeHist(vChannel, vChannel);
-
-        // Merge the channels back
-        merge(hsvChannels, hsvImage);
-
-        return hsvImage;
-    }
-
-    private static char findDominantColor (int red, int orange, int white, int yellow, int green, int blue){
-        if (red>orange && red>white && red>yellow && red>green && red>blue){
-            return 'R';
-        } else if (orange>red && orange>white && orange>yellow && orange>green && orange>blue){
-            return 'O';
-        } else if (white>red && white>orange && white>yellow && white>green && white>blue){
-            return 'W';
-        } else if (yellow>red && yellow>orange && yellow>white && yellow>green && yellow>blue){
-            return 'Y';
-        } else if (green>red && green>orange && green>white && green>yellow && green>blue){
-            return 'G';
-        } else {
-            return 'B';
-        }
-    }
-
-    public static char classifyColorHSV(float hue, float saturation, float value) {
-
-        if (saturation < 70) {
-//            System.out.println(" W");
-            return 'W';
-        } else if ((hue <= 25 && value < 185 && saturation < 220)||(hue > 120 && hue < 210)) {
-//            System.out.println(" R");
-            return 'R';
-        } else if (hue < 25) {
-//            System.out.println(" O");
-            return 'O';
-        } else if (hue >= 25 && hue < 40 && value <= 260) {
-//            System.out.println(" Y");
-            return 'Y';
-        } else if (hue >= 40 && hue < 70 && saturation < 220) {
-//            System.out.println(" G");
-            return 'G';
-        } else if (hue >= 70 && hue < 120) {
-//            System.out.println(" B");
-            return 'B';
-        } else {
-//            System.out.println(" U");
-            return 'U';
-        }
-    }
-
-    public static char classifyColorLab(float l, float a, float b) {
-
-        if (l > 45 && l <= 100 && a > 0 && a < 10 && b > 0 && b < 10) {
-//            System.out.println(" W");
-            return 'W';
-        } else if (a > 35 && a < 40 && b > 18 && b < 22) {
-//            System.out.println(" R");
-            return 'R';
-        } else if (a > 38 && a < 45 && b > 37 && b < 45) {
-//            System.out.println(" O");
-            return 'O';
-        } else if (a > 40 && a < 48 && b > 33 && b < 37) {
-//            System.out.println(" Y");
-            return 'Y';
-        } else if (a > 28 && a < 35 && b > 10 && b < 17) {
-//            System.out.println(" G");
-            return 'G';
-        } else if (a > 30 && a < 35 && b > 17 && b < 20) {
-//            System.out.println(" B");
-            return 'B';
-        } else {
-//            System.out.println(" U");
-            return 'U';
-        }
     }
 
     public static char classifyColorDeltaELab(float l, float a, float b){
         // Real world values
-        Map<Character, double[]> referenceColors = new HashMap<>();
-        referenceColors.put('W', new double[]{210, 130, 137});
+        Map<Character, double[]> referenceColors = new HashMap<>();//this initializes a map that matches characters to an array of unique LAB values. Each character represents one of the colors on the cube, and each color may have multiple characters and therfore LAB values that deal with different lighting conditions.
+        referenceColors.put('W', new double[]{210, 130, 137});//TODO change/add all the values to tune the color detection
         referenceColors.put('R', new double[]{85, 165, 160});
         referenceColors.put('O', new double[]{145, 165, 175});
         referenceColors.put('Y', new double[]{165, 105, 194});
         referenceColors.put('G', new double[]{160, 80, 165});
         referenceColors.put('B', new double[]{130, 123, 106});
-        referenceColors.put('r', new double[]{175, 165, 150});
-        referenceColors.put('w', new double[]{130, 130, 135});
-        //referenceColors.put('b', new double[]{198, 124, 121});
-        referenceColors.put('o', new double[]{226, 138, 142});
-        referenceColors.put('s', new double[]{133, 190, 160});
-        referenceColors.put('S', new double[]{210, 158, 110});
-        referenceColors.put('x', new double[]{182, 122, 126});
-        referenceColors.put('q', new double[]{181, 155, 164});
+        referenceColors.put('r', new double[]{175, 165, 150});//another red
+        referenceColors.put('w', new double[]{130, 130, 135});//another white
+        referenceColors.put('o', new double[]{226, 138, 142});//another orange
+        referenceColors.put('s', new double[]{133, 190, 160});//another red
+        referenceColors.put('S', new double[]{210, 158, 110});//another red
+        referenceColors.put('x', new double[]{182, 122, 126});//another white
+        referenceColors.put('q', new double[]{181, 155, 164});//another orange
 
-        // Values for a utopia
-//        Map<Character, double[]> referenceColors = new HashMap<>();
-//        referenceColors.put('W', new double[]{255, 128, 128});
-//        referenceColors.put('R', new double[]{135, 208, 195});
-//        referenceColors.put('O', new double[]{179, 151, 206});
-//        referenceColors.put('Y', new double[]{247, 107, 222});
-//        referenceColors.put('G', new double[]{224, 42, 211});
-//        referenceColors.put('B', new double[]{82, 207, 20});
-
-        char bestColor = 'U';
-        double minDeltaE = Double.MAX_VALUE;
-        for(Map.Entry<Character, double[]> entry : referenceColors.entrySet()){
-            double[] ref = entry.getValue();
-            double deltaE = Math.sqrt(Math.pow(l - ref[0], 2)/5 + Math.pow(a - ref[1], 2) + Math.pow(b - ref[2], 2));
-            if (deltaE < minDeltaE){
-                minDeltaE = deltaE;
-                bestColor = entry.getKey();
+        char bestColor = 'U';//Set to U so that if something goes wrong and no color is detected, U is returned to signify unknown
+        double minDeltaE = Double.MAX_VALUE;//sets it to the maximum possible value that can be stored in a double so that it doesn't end up being less than the minimum distance from the reference color
+        for(Map.Entry<Character, double[]> entry : referenceColors.entrySet()){//goes through all reference colors
+            double[] ref = entry.getValue();//gets the LAB values from the reference color
+            double deltaE = Math.sqrt(Math.pow(l - /*TODO add the l value of the reference value*/, 2)/5 + Math.pow(a - /*TODO add the a value of the reference value*/, 2) + Math.pow(b - /*TODO add the b value of the reference value*/, 2));//uses the pythagorean theorem to calculate the distance of the actual color to the reference color
+            if (deltaE < minDeltaE){//if the distance is the least that has been tested so far
+                minDeltaE;//TODO set the new distance as the minimum
+                bestColor = entry.getKey();//sets the new color as the best color so far
             }
         }
-
+        //the following if statements return the color that should be associated with the extra letters
         if (bestColor == 'r'|| bestColor == 's'|| bestColor == 'S'){
             return 'R';
         }
@@ -539,32 +269,32 @@ public class OpenCvRaspberryPiCamera implements CubeColorInspector{
 
     public void drawSquare(int squareX, int squareY, int squareWidth, int squareHeight) {
         try {
-            BufferedImage image = ImageIO.read(new File(outputImage));
+            BufferedImage image = ImageIO.read(new File(outputImage));//loads the image
 
-            Graphics2D g2d = image.createGraphics();
+            Graphics2D g2d = image.createGraphics();//sets up the graphics of the image
 
-            g2d.setColor(Color.RED);
+            g2d.setColor(Color.RED);//sets the drawing color to red
 
-            g2d.drawRect(squareX, squareY, squareWidth, squareHeight);
+            g2d.drawRect(squareX, squareY, squareWidth, squareHeight);//draws the rectangle given the coordinates of the top left corner, the width, and the height
 
-            g2d.dispose();
+            g2d.dispose();//gets rid of the graphics when its done to reduce clutter
 
-            ImageIO.write(image, "jpg", new File(outputImage));
-            //System.out.println("squares drawn and image saved.");
-        } catch (IOException e) {
+            ImageIO.write(image, "jpg", new File(outputImage));//replaces the original image with the new image that has the rectangle drawn on it
+
+        } catch (IOException e) {//handles any errors
             e.printStackTrace();
         }
     }
 
     public static int getListMedian(List<Integer> list){
-        list.sort(Comparator.naturalOrder());
-        int n = list.size();
-        if (n<1) throw new IllegalArgumentException("List is empty");
+        list.sort(Comparator.naturalOrder());//puts all items in the list into numerical order
+        int n = list.size();//gets the number of items in the list
+        if (n<1) throw new IllegalArgumentException("List is empty");//makes sure there is stuff in the list, if not it will give an error
 
-        if(n % 2 == 1){
-            return list.get((n-1)/2);
-        } else{
-            return (list.get(n/2-1) + list.get(n/2))/2;
+        if(n % 2 == 1){//if it is odd
+            return list.get((n-1)/2);//returns the middle number as the median
+        } else{//if it is even
+            return (list.get(n/2-1) + list.get(n/2))/2;//takes the mean of the two middle numbers to return as the median
         }
     }
 

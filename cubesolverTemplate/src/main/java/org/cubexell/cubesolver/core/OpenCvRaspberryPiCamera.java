@@ -199,14 +199,14 @@ public class OpenCvRaspberryPiCamera implements CubeColorInspector{
                 int pixelB = indexer.get();//TODO B is 2
 
                 listOfL.add();//TODO add the value to the list
-                listOfA.add(pixelA);//TODO A value
-                listOfB.add(pixelB);//TODO B value
+                listOfA.add();//TODO A value
+                listOfB.add();//TODO B value
 
             }
 
         }
 
-        int medianL;//TODO get the median L value
+        int medianL;//TODO assign the median L value
         int medianA;//TODO A value
         int medianB;//TODO B value
 

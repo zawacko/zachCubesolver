@@ -50,11 +50,11 @@ public class OpenCvRaspberryPiCamera implements CubeColorInspector{
         char[][][] cubeColors = new char[6][3][3];//creates a blank matrix of the cube
 
         System.out.println("Back Face");//tells which face the following colors are for
-        char[][] backFace = inspectBackFace('B');//the 'B' is the center color, and it gets the colors of the rest of the pieces on the back face
+        char[][] backFace;//TODO inspectBackFace. 'B' is the center color, and get the colors of the rest of the pieces on the back face
         System.out.println();
 
         System.out.println("Left Face");
-        char[][] leftFace = inspectLeftFace('O');
+        char[][] leftFace;//TODO inspectLeftFace. 'O' is center
         System.out.println();
 
         System.out.println("Down Face");
@@ -194,13 +194,13 @@ public class OpenCvRaspberryPiCamera implements CubeColorInspector{
 
         for () {//TODO use the for loop to go through every row
             for () {//TODO use a for loop to go through every column
-                int pixelL = indexer.get();//TODO get the L value of that pixel by putting row, col, and 0 because L is the first value
-                int pixelA = indexer.get();//TODO A is second value, so 1
-                int pixelB = indexer.get();//TODO B is 2
+                int pixelL;//TODO get the L value of that pixel by putting row, col, and 0 because L is the first value
+                int pixelA;//TODO A is second value, so 1
+                int pixelB;//TODO B is 2
 
-                listOfL.add();//TODO add the value to the list
-                listOfA.add();//TODO A value
-                listOfB.add();//TODO B value
+                //TODO add the value to the list
+                //TODO A value
+                //TODO B value
 
             }
 
@@ -212,7 +212,7 @@ public class OpenCvRaspberryPiCamera implements CubeColorInspector{
 
         System.out.println("Median values: L: " + medianL + " A: " + medianA + " B: " + medianB);//prints out the final median values for tuning
 
-        char medianLabColor;//TODO figure out what color the square is given the median lab values
+        char medianLabColor;//TODO figure out what color the square is given the median lab values using the function you code that does it
 
         System.out.println("Median color is: " + medianLabColor);//prints out the color
         System.out.println();

@@ -20,6 +20,7 @@ public class CubeConstants {
             };
 
 
+    public static final String[] ROTATE_AROUND_CORNER = {"R", "Li", "F", "Bi","U", "Di", "R", "Li"};
     public static final String[] SEE_OPPOSITE_FACE_UP = {"F","B","R2","L2","Fi","Bi"};
     public static final String[] SEE_OPPOSITE_FACE_RIGHT = {"F","B","U2","D2","Fi","Bi"};
     public static final String[] SEE_OPPOSITE_FACE_FRONT = {"Ri","Li","U2","D2","R","L"};

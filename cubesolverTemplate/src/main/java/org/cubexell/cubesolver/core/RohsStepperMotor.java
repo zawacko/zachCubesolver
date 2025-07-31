@@ -74,7 +74,7 @@ public class RohsStepperMotor implements Motor{
     public void turn(double numRotations){
         boolean direction = false;
         if (numRotations < 0){//TODO done
-            direction = true//TODO done
+            direction = true;//TODO done
             numRotations = numRotations*-1;//make it positive now that we have adjusted direction.
         }
         try {

@@ -1,5 +1,6 @@
 import org.cubexell.cubesolver.core.*;
 
+import java.io.IOException;
 import java.util.Scanner;
 import java.io.Console;
 
@@ -11,9 +12,12 @@ import java.util.Arrays;
 import java.util.concurrent.locks.LockSupport;
 
 
-public class Main {
 
-	public static void main(String[] args) {
+
+public class Main {
+	public static void main(String[] args) throws IOException, InterruptedException {
+
+
 		int BEGINNER_METHOD = 1;
 		int OP_METHOD = 2;
 		int KOCIEMBA_METHOD = 3;
@@ -22,14 +26,20 @@ public class Main {
 		//Scanner scanner = new Scanner(System.in);
 		Console console = System.console();
 		String method = "B";
-		String isScramblingCube = "N";
+		String isScramblingCube = "Y";
 		boolean autoTune = false;
 
 		String cubeSolvingMethod;
 
-		if (args.length > 1 && args[0] != null) {
+		if (args.length > 2 && args[0] != null) {
 			method = args[0];
 			isScramblingCube = args[1];
+			if (args[2] != null){
+				if(args[2].equalsIgnoreCase("Y")){
+					autoTune = true;
+					System.out.println("autoTuning");
+				}
+			}
 		}
 		if ("O".equalsIgnoreCase(method)) {
 			cubeSolvingMethod = "Old Pochmann";
@@ -40,12 +50,7 @@ public class Main {
 		else {
 			cubeSolvingMethod = "Kociemba";
 		}
-		if (args[2] != null){
-			if(args[2].equals("Y")){
-				autoTune = true;
-				System.out.println("autoTuning");
-			}
-		}
+
 
 		Motor upMotor = new RohsStepperMotor(24, 25, 8, 7);
 		Motor downMotor = new RohsStepperMotor(1, 12, 16, 20);
@@ -76,6 +81,7 @@ public class Main {
 				System.out.print(scrambleMove + ",");
 			}
 			cubeColors = scrambler.scramble(scrambleMoves);
+			Thread.sleep(5000);
 		}
 		else {
 			cubeColors = inspector.inspect();

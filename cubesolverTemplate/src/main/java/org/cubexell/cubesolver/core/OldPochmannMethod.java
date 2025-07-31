@@ -315,26 +315,27 @@ public class OldPochmannMethod
 
 
     String getEdgeToBeSolved(){
-        char b;//TODO: assign the color in the b spot to a character b
-        char m;//TODO: assign the color in the m spot to a character m
+        char b = cube.cubeColors[UP_FACE_INDEX][1][2];//TODO done
+        char m = cube.cubeColors[RIGHT_FACE_INDEX][0][1];//TODO done
         return String.valueOf(b) + String.valueOf(m);//return a combined string of the 2 characters, e.g. "WR", "BG", etc.
     }
 
 
     public void solveEdges() {
-        HashSet<String> unsolvedEdges ;//TODO: setup a HASHSET of all edges to solve by the name of unsovedEdges
-        while () {//TODO: inside the parentheses, check if the #unsovled edges>0 AND if the edges are solved
+        HashSet<String> unsolvedEdges = createUnsolvedEdges();//TODO done
+        while (unsolvedEdges.size()>0 && !cube.areEdgesSolved()) {//TODO done
             System.out.println("num unsolved edges: " + unsolvedEdges.size());
-            String faceColor;//TODO: define a String named faceColor to be the edge in the buffer spot
+            String faceColor = getEdgeToBeSolved();//TODO done
 
             System.out.println("faceColor: " + faceColor);
-            while () {//TODO: check if the edge "WR" is NOT the face color, also check if "RW" is NOT the face color
-                //TODO: execute the edge swap for the face color
+            while (!"WR".equalsIgnoreCase(faceColor) && !"RW".equalsIgnoreCase(faceColor)) {//TODO done
+                //TODO done
+                executeEdgeSwap(faceColor, solution);
                 if (unsolvedEdges.contains(faceColor)) {
                     unsolvedEdges.remove(faceColor);//then it removes that edge from the list
                     unsolvedEdges.remove(cube.getReverseOfString(faceColor));
                 }
-                faceColor;//TODO: assign the new edge in the buffer to the variable faceColor
+                faceColor = getEdgeToBeSolved();//TODO done
 
                 System.out.println("faceColor: " + faceColor);
                 System.out.println("num unsolved edges: " + unsolvedEdges.size());
@@ -344,7 +345,8 @@ public class OldPochmannMethod
             if (unsolvedEdges.size() > 0) {
                 System.out.println("new cycle, swapping with: " + unsolvedEdges.iterator().next());
                 System.out.println("number of unsolved edges: " + unsolvedEdges.size());
-                //TODO: execute edge swap with a random unsolved edge (hint: take the next value in unsolvedEdges)
+                unsolvedEdges.iterator().next();
+                //TODO done
             }
             //check if edges are solved, if it is, exit loop, if not, repeat for the new cycle
         }

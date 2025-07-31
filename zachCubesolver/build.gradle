@@ -1,0 +1,68 @@
+plugins {
+    id 'java-library'
+    id 'application'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java']
+        }
+    }
+    example {
+        java {
+            srcDirs = ['src/example/java']
+        }
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
+}
+
+application {
+    mainClass = 'Main'
+//    applicationDefaultJvmArgs = ["-Djava.library.path=/usr/lib/jni"]
+}
+
+tasks.named('run') {
+    classpath = sourceSets.example.runtimeClasspath
+    // Code to handle command line args. Example usage to pass args:
+    // ./gradlew run -Pargs="arg1,arg2,arg3"
+    if (project.hasProperty('args')) {
+        args project.args.split(',')
+    }
+}
+
+ext {
+    pi4jVersion = '2.4.0'
+}
+
+//plugins.withType(JavaPlugin).configureEach {
+//    java {
+//        modularity.inferModulePath = true
+//    }
+//}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+repositories {
+    mavenCentral() // Add mavenCentral if not already present
+        flatDir {
+        dirs 'libs'
+    }
+}
+
+dependencies {
+    implementation 'org.slf4j:slf4j-api:2.0.12'
+    implementation 'org.slf4j:slf4j-simple:2.0.12'
+    implementation 'com.pi4j:pi4j-core:2.6.0'
+    implementation 'com.pi4j:pi4j-plugin-raspberrypi:2.6.0'
+    implementation 'com.pi4j:pi4j-plugin-gpiod:2.6.0'
+    implementation files('lib/twophase.jar')
+    //imlementation name: 'opencv-460'
+    implementation 'org.bytedeco:opencv-platform:4.10.0-1.5.11'
+}
+
+
